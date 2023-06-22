@@ -26,14 +26,14 @@ To use Google Drive as a CMS, first you'll have to do some setup in Google Cloud
 -   Create a Service Account and obtain its credentials
 -   Share your website's files with the Service Account's email address
 
-More detailed instructions here: [Setting up Google Cloud Platform](./docs/google-setup.md).
+More detailed instructions here: [Setting up Google Cloud Platform](./google-setup.md).
 
 ### Usage
 
 We designed this for easy use in a NextJS application, but it should be easy to use in any **server side** JavaScript or TypeScript application.
 
 1. Install the package in your project with `npm install drive-cms`.
-2. Create an instance of DriveCMS. Here, you can pass in an auth credential<!-- and configure Drive CMS' behavior-->. You can authenticate any way GoogleAuth allows. Read more about [Authenticating to Google](./docs/google-auth.md)
+2. Create an instance of DriveCMS. Here, you can pass in an auth credential<!-- and configure Drive CMS' behavior-->. You can authenticate any way GoogleAuth allows. Read more about [Authenticating to Google](./google-auth.md)
 
 ```ts
 // src/lib/drive.ts
