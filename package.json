@@ -1,0 +1,59 @@
+{
+    "name": "drive-cms",
+    "version": "0.0.1",
+    "description": "Use Google Drive as a free, simple, headless CMS!",
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "files": [
+        "LICENSE",
+        "README.md",
+        "lib/**/*"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "clean": "rimraf ./lib",
+        "format": "prettier --write \"src/**/*\"",
+        "lint": "eslint src",
+        "lint:fix": "eslint src --fix",
+        "test": "jest",
+        "prepublishOnly": "npm run clean && npm run build && npm test && npm run prettier && npm run lint"
+    },
+    "keywords": [
+        "Google Drive",
+        "CMS",
+        "Content Management System",
+        "Content Source"
+    ],
+    "author": "GoodForm AI (goodform-ai)",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/jest": "^29.5.2",
+        "@types/jsdom": "^21.1.1",
+        "@typescript-eslint/eslint-plugin": "^5.60.0",
+        "@typescript-eslint/parser": "^5.60.0",
+        "eslint": "^8.43.0",
+        "eslint-config-prettier": "^8.8.0",
+        "eslint-plugin-prettier": "^4.2.1",
+        "jest": "^29.5.0",
+        "prettier": "^2.8.8",
+        "rimraf": "^5.0.1",
+        "ts-jest": "^29.1.0",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.1.3"
+    },
+    "dependencies": {
+        "googleapis": "^118.0.0",
+        "jsdom": "^22.1.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/goodform-ai/drive-cms.git"
+    },
+    "bugs": {
+        "url": "https://github.com/goodform-ai/drive-cms/issues"
+    },
+    "homepage": "https://github.com/goodform-ai/drive-cms#readme",
+    "directories": {
+        "lib": "lib"
+    }
+}
