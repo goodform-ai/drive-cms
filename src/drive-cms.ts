@@ -10,15 +10,17 @@ import {
     replaceGoogleHrefs,
     removeImageReferrer,
     extractTableMetadata,
-    extractSnippet,
+    getSnippet,
     extractDocumentHtml,
-    extractTitle,
+    getTitle,
+    getCoverImage,
 } from "./dom-utils";
 import type {
+    DefaultDocMeta,
     DocumentOptions,
     DriveCMSConfig,
     DriveCMSDocument,
-    DriveDocMeta,
+    DriveFileMeta,
 } from "./types";
 
 /** Interfaces with the Google Drive API to retrieve files */
@@ -71,32 +73,35 @@ export class DriveCMS {
         this.drive = google.drive({ auth, version: "v3" });
     }
 
-    async getFileDataByName(name: string) {
-        const fileId = (await this._getFileIdsByName(name))?.[0];
-        if (!fileId) return;
-        const data = this._getFileDataById(fileId);
+    /** Given the name of a file in Google Drive, retrieve all its data */
+    async getFileDataByName(
+        /** Name of the file in Google Drive */
+        name: string,
+        /** Options to manipulate the exported HTML */
+        docOptions?: DocumentOptions,
+    ): Promise<DriveCMSDocument | undefined> {
+        const fileIds = await this._getFileIdsByName(name);
+        const fileId = fileIds?.[0];
+        if (!fileId) {
+            console.warn(`No document found with the name "${name}"`);
+            return;
+        }
+        if (fileIds.length > 1) {
+            console.warn(`More than one document with name "${name}".`);
+            console.warn(`Taking the first result with ID "${fileId}"`);
+        }
+        const data = this._getFileDataById(fileId, {
+            ...this._docOptions,
+            ...docOptions,
+        });
         return data;
     }
 
-    async getFilesByName(name: string) {
-        const response = await this.drive.files.list({
-            q: `name='${name}'`,
-            fields: `files(${this.fields})`,
-        });
-
-        return response.data.files ?? [];
-    }
-
-    async getFileById(fileId: string) {
-        const response = await this.drive.files.get({
-            fileId,
-            fields: this.fields,
-        });
-
-        return response.data;
-    }
-
-    async getAllDocs(params?: drive_v3.Params$Resource$Files$List) {
+    /** Get all the documents from your Google Drive, given search params and html prep options */
+    async getAllDocs(
+        params?: drive_v3.Params$Resource$Files$List,
+        docOptions?: DocumentOptions,
+    ) {
         const defaultParams: drive_v3.Params$Resource$Files$List = {
             q: `mimeType='${MIME_TYPE_DOCUMENT}' and trashed=false`,
             fields: `files(${this.fields})`,
@@ -113,28 +118,38 @@ export class DriveCMS {
         const documents = await Promise.all(
             files
                 .filter((file) => file.id && file.name)
-                .map(async (file) => this._getFileDataById(file.id!)),
+                .map(async (file) =>
+                    this._getFileDataById(file.id!, {
+                        ...this._docOptions,
+                        ...docOptions,
+                    }),
+                ),
         );
 
         return documents;
     }
 
-    async _getFileDataById(fileId: string): Promise<DriveCMSDocument> {
+    /** Get all a file's data by its File ID */
+    async _getFileDataById(
+        fileId: string,
+        docOptions: DocumentOptions,
+    ): Promise<DriveCMSDocument> {
         const file = (
             await this.drive.files.get({ fileId, fields: this.fields })
-        ).data as DriveDocMeta;
+        ).data as DriveFileMeta;
         const document = await this.drive.files.export({
             fileId,
             mimeType: "text/html",
         });
         const { content, meta } = prepareDocument(
             document.data as string,
-            this._docOptions,
+            docOptions,
         );
 
         return { content, meta, file };
     }
 
+    /** Gets a list of File IDs by document name. */
     async _getFileIdsByName(name: string): Promise<string[]> {
         const response = await this.drive.files.list({
             q: `name='${name}'`,
@@ -143,15 +158,11 @@ export class DriveCMS {
         const ids = (response.data.files ?? [])
             .filter(({ id }) => !!id)
             .map((file) => file.id!);
-        if (ids.length > 1)
-            console.warn(
-                `DriveCMS - Found more than 1 file with name "${name}".`,
-            );
         return ids;
     }
 }
 
-export const prepareDocument = (
+const prepareDocument = (
     html: string,
     {
         keepStyles = false,
@@ -162,17 +173,19 @@ export const prepareDocument = (
         ignoreSnippet = false,
         snippetLength = 200,
         ignoreTitle = false,
+        ignoreCover = false,
     }: DocumentOptions = {},
 ): Pick<DriveCMSDocument, "meta" | "content"> => {
-    let meta: { [key: string]: string } = {};
+    let meta: DefaultDocMeta = { title: "", snippet: "", cover_image: "" };
     const dom = new JSDOM(html);
     if (!keepStyles) removeDocumentStyles(dom);
     if (!keepEmptyText) removeEmptySpans(dom);
     if (!keepGoogleLinks) replaceGoogleHrefs(dom);
     if (!keepReferrer) removeImageReferrer(dom);
-    if (!ignoreMeta) meta = extractTableMetadata(dom);
-    if (!ignoreSnippet) meta.snippet = extractSnippet(dom, snippetLength);
-    if (!ignoreTitle) meta.title = extractTitle(dom);
+    if (!ignoreSnippet) meta.snippet = getSnippet(dom, snippetLength);
+    if (!ignoreTitle) meta.title = getTitle(dom);
+    if (!ignoreCover) meta.cover_image = getCoverImage(dom);
+    if (!ignoreMeta) meta = { ...meta, ...extractTableMetadata(dom) };
     const content = extractDocumentHtml(dom);
 
     return { content, meta };

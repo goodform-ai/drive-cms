@@ -9,17 +9,28 @@ export interface DriveCMSConfig {
     scopes?: string[];
 }
 
+/** Default document metadata. Has a title, snippet, and cover_image */
+export interface DefaultDocMeta {
+    [key: string]: string | undefined;
+    title: string;
+    snippet: string;
+    cover_image: string;
+}
+
+/** A document from Google Drive, including the HTML content, file metadata, and generic document metadata */
 export interface DriveCMSDocument<
-    MetaType extends { [key: string]: string } = { [key: string]: string },
+    MetaType extends DefaultDocMeta = DefaultDocMeta,
 > {
     /** HTML string content */
     content: string;
+    /** Document Metadata */
     meta: MetaType;
-    file: DriveDocMeta;
+    /** Drive File Metadata */
+    file: DriveFileMeta;
 }
 
 /** Google Drive Document Metadata (file-level) */
-export interface DriveDocMeta extends drive_v3.Schema$File {
+export interface DriveFileMeta extends drive_v3.Schema$File {
     id: string;
     name: string;
 }
@@ -41,4 +52,6 @@ export interface DocumentOptions {
     snippetLength?: number;
     /** Whether to ignore the title */
     ignoreTitle?: boolean;
+    /** Whether to ignore the first image */
+    ignoreCover?: boolean;
 }

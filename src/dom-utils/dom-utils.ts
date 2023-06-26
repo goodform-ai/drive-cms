@@ -67,8 +67,8 @@ export const extractDocumentHtml = (dom: JSDOM): string => {
     return dom.window.document.body.innerHTML;
 };
 
-/** Generates a snippet from the Google Doc */
-export const extractSnippet = (dom: JSDOM, maxChars: number): string => {
+/** Generates a snippet from the Google Doc from the first contentful paragraph */
+export const getSnippet = (dom: JSDOM, maxChars: number): string => {
     let snippet = "";
     // find the first paragraph with content
     let paragraph = findElementsWithMatcher(
@@ -91,7 +91,8 @@ export const extractSnippet = (dom: JSDOM, maxChars: number): string => {
     return snippet.trim();
 };
 
-export const extractTitle = (dom: JSDOM): string => {
+/** Extracts the text from the first heading element */
+export const getTitle = (dom: JSDOM): string => {
     const h = findElementsWithMatcher(
         dom,
         "h1, h2, h3, h4, h5, h6",
@@ -99,4 +100,10 @@ export const extractTitle = (dom: JSDOM): string => {
     )?.[0];
     if (!h) return "";
     return h.textContent ?? "";
+};
+
+/** Gets the first image in the document */
+export const getCoverImage = (dom: JSDOM): string => {
+    const img = dom.window.document.querySelector("img");
+    return img?.src ?? "";
 };
