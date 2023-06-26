@@ -1,7 +1,7 @@
-export * from "./config";
-export * from "./constants";
-export * from "./dom-utils";
-
 import { DriveCMS } from "./drive-cms";
-export { DriveCMS };
+
+export * from "./dom-utils";
+export * from "./drive-cms";
+export type * from "./types";
+
 export default DriveCMS;
