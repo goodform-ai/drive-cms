@@ -5,18 +5,16 @@
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "files": [
-        "LICENSE",
-        "README.md",
         "lib/**/*"
     ],
     "scripts": {
         "build": "tsc",
         "clean": "rimraf ./lib",
+        "dev": "tsc -w",
         "format": "prettier --write \"src/**/*\"",
         "lint": "eslint src",
-        "lint:fix": "eslint src --fix",
         "test": "jest",
-        "prepublishOnly": "npm run clean && npm run build && npm test && npm run prettier && npm run lint"
+        "prepublishOnly": "npm run clean && npm run lint && npm test && npm run build"
     },
     "keywords": [
         "Google Drive",

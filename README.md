@@ -69,6 +69,7 @@ Keep an eye out for some fancy features we have planned for the future!
 -   Automated package deploys
 -   Improved documentation
 -   Documentation site on GitHub Pages
+-   Fix link query param handling
 
 ## License
 
@@ -76,6 +77,6 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE.md)
 
 ## Resources
 
--   [Using Google Drive as a CMS | CSS Tricks](https://css-tricks.com/using-google-drive-as-a-cms/)
+-   [CSS Tricks: Using Google Drive as a CMS](https://css-tricks.com/using-google-drive-as-a-cms/)
 -   [Google Drive API Docs](https://developers.google.com/drive/api/reference/rest/v3)
 -   [Gatsby Source Google Docs](https://cedricdelpoux.github.io/gatsby-source-google-docs/)

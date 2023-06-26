@@ -8,7 +8,7 @@
     "plugins": ["prettier", "@typescript-eslint"],
     "ignorePatterns": ["lib/**/*"],
     "rules": {
-        "prettier/prettier": "error",
+        "prettier/prettier": ["error", { "endOfLine": "auto" }],
         "no-console": "warn"
     },
     "parserOptions": {
