@@ -1,5 +1,11 @@
+/* eslint-disable no-console */
 import { JSDOM } from "jsdom";
-import { findElementsWithMatcher, findNextSiblingWithContent } from "./utils";
+import {
+    findElementsWithMatcher,
+    findNextSiblingWithContent,
+    findPriorSiblingWithContent,
+    toBase64,
+} from "./utils";
 
 /** Extracts the link URL from Google Docs links
  *
@@ -56,7 +62,7 @@ export const removeEmptySpans = (dom: JSDOM): void => {
  *
  * @see https://stackoverflow.com/questions/56242788/http-403-on-images-loaded-from-googleusercontent-com
  */
-export const removeImageReferrer = (dom: JSDOM) => {
+export const removeImageReferrer = (dom: JSDOM): void => {
     dom.window.document
         .querySelectorAll("img")
         .forEach((img) => img.setAttribute("referrerpolicy", "no-referrer"));
@@ -92,18 +98,40 @@ export const getSnippet = (dom: JSDOM, maxChars: number): string => {
 };
 
 /** Extracts the text from the first heading element */
-export const getTitle = (dom: JSDOM): string => {
-    const h = findElementsWithMatcher(
-        dom,
-        "h1, h2, h3, h4, h5, h6",
-        (h) => !!h.textContent?.trim(),
-    )?.[0];
-    if (!h) return "";
-    return h.textContent ?? "";
+export const extractTitle = (dom: JSDOM): string => {
+    const h = dom.window.document.querySelector("h1");
+    h?.remove();
+    return h?.textContent ?? "";
 };
 
-/** Gets the first image in the document */
-export const getCoverImage = (dom: JSDOM): string => {
-    const img = dom.window.document.querySelector("img");
+/** Gets an image with no prior content, removes it, and returns its source */
+export const extractCoverImage = (dom: JSDOM): string => {
+    const p = findElementsWithMatcher(dom, "p", (p: HTMLParagraphElement) => {
+        return !findPriorSiblingWithContent(p) && !!p.querySelector("img");
+    })?.[0];
+    const img = p?.querySelector("img");
+    img?.remove();
     return img?.src ?? "";
+};
+
+/** Gets the paragraph immediately after h1, removes it and returns its text */
+export const extractDescription = (dom: JSDOM): string => {
+    const p = dom.window.document.querySelector("h1 + p");
+    p?.remove();
+    return p?.textContent ?? "";
+};
+
+export const replaceImageSrcBase64 = async (dom: JSDOM): Promise<void> => {
+    const images = dom.window.document.querySelectorAll("img");
+    for (const img of images) {
+        if (!img.src) break;
+        try {
+            const base64 = await toBase64(img.src);
+            img.src = `data:image/jpeg;base64,${base64}`;
+        } catch (err) {
+            console.error(
+                `Failed to download image ${img.src}, try again later`,
+            );
+        }
+    }
 };

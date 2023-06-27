@@ -1,3 +1,4 @@
+import axios from "axios";
 import { JSDOM } from "jsdom";
 
 /** Recursively finds the previous sibling that has content, if any
@@ -27,11 +28,19 @@ export const findNextSiblingWithContent = (
     return findNextSiblingWithContent(element.nextElementSibling);
 };
 
-export const findElementsWithMatcher = (
+export const findElementsWithMatcher = <ElementType extends Element = Element>(
     dom: JSDOM,
     selector: string,
-    matcher: (element: Element) => boolean,
+    matcher: (element: ElementType) => boolean,
 ) => {
-    const elements = Array.from(dom.window.document.querySelectorAll(selector));
+    const elements = Array.from(
+        dom.window.document.querySelectorAll<ElementType>(selector),
+    );
     return elements.filter(matcher);
+};
+
+export const toBase64 = async (url: string) => {
+    const response = await axios.get(url, { responseType: "arraybuffer" });
+    const buffer = Buffer.from(response.data, "binary").toString("base64");
+    return buffer;
 };

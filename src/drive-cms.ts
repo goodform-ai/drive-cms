@@ -12,8 +12,10 @@ import {
     extractTableMetadata,
     getSnippet,
     extractDocumentHtml,
-    getTitle,
-    getCoverImage,
+    extractTitle,
+    extractCoverImage,
+    extractDescription,
+    replaceImageSrcBase64,
 } from "./dom-utils";
 import type {
     DefaultDocMeta,
@@ -141,7 +143,7 @@ export class DriveCMS {
             fileId,
             mimeType: "text/html",
         });
-        const { content, meta } = prepareDocument(
+        const { content, meta } = await prepareDocument(
             document.data as string,
             docOptions,
         );
@@ -162,30 +164,39 @@ export class DriveCMS {
     }
 }
 
-const prepareDocument = (
+const prepareDocument = async (
     html: string,
     {
         keepStyles = false,
         keepEmptyText = false,
         keepGoogleLinks = false,
+        keepGoogleContent = false,
         keepReferrer = false,
-        ignoreMeta = false,
+        ignoreMetaTable = false,
         ignoreSnippet = false,
         snippetLength = 200,
-        ignoreTitle = false,
-        ignoreCover = false,
+        ignoreDesc_h1P = false,
+        ignoreTitle_h1 = false,
+        ignoreFirstImage = false,
     }: DocumentOptions = {},
-): Pick<DriveCMSDocument, "meta" | "content"> => {
-    let meta: DefaultDocMeta = { title: "", snippet: "", cover_image: "" };
+): Promise<Pick<DriveCMSDocument, "meta" | "content">> => {
+    let meta: DefaultDocMeta = {
+        title: "",
+        snippet: "",
+        cover_image: "",
+        description: "",
+    };
     const dom = new JSDOM(html);
     if (!keepStyles) removeDocumentStyles(dom);
     if (!keepEmptyText) removeEmptySpans(dom);
     if (!keepGoogleLinks) replaceGoogleHrefs(dom);
     if (!keepReferrer) removeImageReferrer(dom);
+    if (!keepGoogleContent) await replaceImageSrcBase64(dom);
     if (!ignoreSnippet) meta.snippet = getSnippet(dom, snippetLength);
-    if (!ignoreTitle) meta.title = getTitle(dom);
-    if (!ignoreCover) meta.cover_image = getCoverImage(dom);
-    if (!ignoreMeta) meta = { ...meta, ...extractTableMetadata(dom) };
+    if (!ignoreDesc_h1P) meta.description = extractDescription(dom);
+    if (!ignoreTitle_h1) meta.title = extractTitle(dom);
+    if (!ignoreFirstImage) meta.cover_image = extractCoverImage(dom);
+    if (!ignoreMetaTable) meta = { ...meta, ...extractTableMetadata(dom) };
     const content = extractDocumentHtml(dom);
 
     return { content, meta };
