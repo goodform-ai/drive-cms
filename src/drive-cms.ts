@@ -174,7 +174,7 @@ const prepareDocument = async (
         keepReferrer = false,
         ignoreMetaTable = false,
         ignoreSnippet = false,
-        snippetLength = 200,
+        snippetLength = 150,
         ignoreDesc_h1P = false,
         ignoreTitle_h1 = false,
         ignoreFirstImage = false,
@@ -192,10 +192,10 @@ const prepareDocument = async (
     if (!keepGoogleLinks) replaceGoogleHrefs(dom);
     if (!keepReferrer) removeImageReferrer(dom);
     if (!keepGoogleContent) await replaceImageSrcBase64(dom);
-    if (!ignoreSnippet) meta.snippet = getSnippet(dom, snippetLength);
     if (!ignoreDesc_h1P) meta.description = extractDescription(dom);
     if (!ignoreTitle_h1) meta.title = extractTitle(dom);
     if (!ignoreFirstImage) meta.cover_image = extractCoverImage(dom);
+    if (!ignoreSnippet) meta.snippet = getSnippet(dom, snippetLength);
     if (!ignoreMetaTable) meta = { ...meta, ...extractTableMetadata(dom) };
     const content = extractDocumentHtml(dom);
 
