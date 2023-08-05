@@ -24,7 +24,8 @@ To use Google Drive as a CMS, first you'll have to do some setup in Google Cloud
 
 -   Enable the Google Drive API
 -   Create a Service Account and obtain its credentials
--   Share your website's files with the Service Account's email address
+-   Share your website's files or folder with the Service Account's email address
+    - Ex. Create a google drive folder and called "Content". Share the folders content with the Service Account's email address. Now every document in there will be accessible through drive-cms
 
 More detailed instructions here: [Setting up Google Cloud Platform](./google-setup.md).
 
